@@ -60,8 +60,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * Author : ChenHengQuan
+ * Time : 2017/4/28.
+ * Email : nullpointerchan@163.com
+ * Desc :
+ * version : v1.0
+ */
 public class ACache {
     public interface SPResultListener<T> {
         void onResult(T t);
@@ -148,9 +157,14 @@ public class ACache {
      * @param key   保存的key
      * @param value 保存的String数据
      */
-    public synchronized void put(String key, String value) {
+    public synchronized void put(final String key, final String value) {
         Observable.just(key)
-                .map(s -> putData(key, value))
+                .map(new Function<String, Boolean>() {
+                    @Override
+                    public Boolean apply(@NonNull String key) throws Exception {
+                        return putData(key, value);
+                    }
+                })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe();
@@ -190,18 +204,26 @@ public class ACache {
         put(key, Utils.newStringWithDateInfo(saveTime, value));
     }
 
-    public synchronized void getAsString(String key, SPResultListener<String> listener) {
+    public synchronized void getAsString(String key, final SPResultListener<String> listener) {
         Observable.just(key)
                 .subscribeOn(Schedulers.io())
-                .map(s -> {
-                    String string = getAsString(key);
-                    if (string == null) {
-                        string = "";
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(@NonNull String key) throws Exception {
+                        String string = getAsString(key);
+                        if (string == null) {
+                            string = "";
+                        }
+                        return string;
                     }
-                    return string;
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(listener::onResult);
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(@NonNull String s) throws Exception {
+                        listener.onResult(s);
+                    }
+                });
     }
 
     /**
@@ -297,21 +319,25 @@ public class ACache {
      * @param key
      * @return JavaBean数据
      */
-    public synchronized <T> void getAsJSONBean(String key, Class<T> clazz, SPResultListener<T> listener) {
+    public synchronized <T> void getAsJSONBean(final String key, final Class<T> clazz, final SPResultListener<T>
+            listener) {
 
-        RxSubscriber<T> observer = new RxSubscriber<T>() {
+        final RxSubscriber<T> observer = new RxSubscriber<T>() {
             @Override
             public void onSuccess(T data) {
                 listener.onResult(data);
             }
         };
         Observable.just(key)
-                .map(s -> {
-                    T t = getAsJSONBean(key, clazz);
-                    if (t == null) {
-                        observer.dispose();
+                .map(new Function<String, T>() {
+                    @Override
+                    public T apply(@NonNull String key) throws Exception {
+                        T t = getAsJSONBean(key, clazz);
+                        if (t == null) {
+                            observer.dispose();
+                        }
+                        return t;
                     }
-                    return t;
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -348,19 +374,22 @@ public class ACache {
     public synchronized <T> void getAsListBean(@NonNull final String key, @NonNull final Class<T[]> clazz
             , @NonNull final SPResultListener<List<T>> listener) {
 
-        RxSubscriber<List<T>> observer = new RxSubscriber<List<T>>() {
+        final RxSubscriber<List<T>> observer = new RxSubscriber<List<T>>() {
             @Override
             public void onSuccess(List<T> list) {
                 listener.onResult(list);
             }
         };
         Observable.just(key)
-                .map(s -> {
-                    List<T> listBean = getAsListBean(key, clazz);
-                    if (listBean == null || listBean.isEmpty()) {
-                        observer.dispose();
+                .map(new Function<String, List<T>>() {
+                    @Override
+                    public List<T> apply(@NonNull String s) throws Exception {
+                        List<T> listBean = getAsListBean(key, clazz);
+                        if (listBean == null || listBean.isEmpty()) {
+                            observer.dispose();
+                        }
+                        return listBean;
                     }
-                    return listBean;
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

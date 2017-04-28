@@ -4,11 +4,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 作者： fangguiliang  时间： 16/7/6.
- * 功能：
- * 修改：
+ * Author : ChenHengQuan
+ * Time : 2017/4/28.
+ * Email : nullpointerchan@163.com
+ * Desc :
+ * version : v1.0
  */
-
 public class StringUtil {
     public static boolean isEmpty(String value) {
         return value == null || "".equals(value.trim());

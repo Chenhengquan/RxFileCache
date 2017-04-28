@@ -4,11 +4,12 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
 /**
- * 作者： fangguiliang  时间： 16/8/24.
- * 功能：订阅处理结果,可以不局限于网络,但{@link #onError(Throwable)}仅处理了网络出错的情况
- * 修改：
+ * Author : ChenHengQuan
+ * Time : 2017/4/28.
+ * Email : nullpointerchan@163.com
+ * Desc :
+ * version : v1.0
  */
-
 public abstract class RxSubscriber<T> implements Observer<T> {
     private boolean isShowToast = true;
     public Disposable mDisposable;
